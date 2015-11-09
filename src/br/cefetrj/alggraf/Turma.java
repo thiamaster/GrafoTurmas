@@ -1,6 +1,12 @@
 package br.cefetrj.alggraf;
 
 public class Turma {
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "[ID de turma: "+courseId+" | Nome de turma: "+courseName+"]";
+	}
+
 	private int courseId;
 	private String instructor;
 	private int numDays;

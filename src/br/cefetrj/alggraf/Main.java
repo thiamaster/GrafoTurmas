@@ -1,10 +1,19 @@
 package br.cefetrj.alggraf;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
+
+import javax.imageio.ImageIO;
+import javax.management.MXBean;
+
+import org.jgrapht.alg.ChromaticNumber;
 
 import jxl.Sheet;
 import jxl.Workbook;
@@ -15,34 +24,13 @@ public class Main {
 	public static Turma[] t;
 	
 		public static void main(String args[]) {
-	/*		int x;
-			Scanner sc = new Scanner(System.in);
-			Grafo my = new Grafo();
-			System.out.println("Número de vértices:");
-			int no_of_ver = sc.nextInt();
-	
-			for (int i = 1; i <= no_of_ver; i++) {
-				my.addVertex("v" + new Integer(i).toString());
-			}
-	
-			do {
-				System.out.println("Forneça uma aresta:");
-				String e1 = sc.next();
-				String e2 = sc.next();
-				my.addEdge(e1, e2);
-				System.out.println("Continuar? Sim=1; Não=0");
-				x = sc.nextInt();
-			} while (x == 1);
-	
-			System.out.println("Grafo criado:\n" + my.getGraph().toString());
-			*/
 			Grafo G = new Grafo();
 			
 			String colunas[] = { "COURSEID", "INSTRUCTOR", "NUMDAYS", "DAYS", "TIMEOFDAY",
 									"ROOMTYPE", "CLASSMAXSIZE", "PERIODO", "COURSENAME"};
 			List<String> colunasList = Arrays.asList(colunas);
 			
-			File input = new File("imp.xls");
+			File input = new File("imp2.xls");
 			WorkbookSettings ws = new WorkbookSettings();
 			ws.setEncoding("Cp1252");
 			try {
@@ -62,10 +50,11 @@ public class Main {
 							Integer.parseInt(sheet.getCell(colunasList.indexOf("CLASSMAXSIZE"), i).getContents()),
 							Integer.parseInt(sheet.getCell(colunasList.indexOf("PERIODO"), i).getContents()),
 							sheet.getCell(colunasList.indexOf("COURSENAME"), i).getContents()
+							
 					);
 					G.addVertex(t[i-1]);
-					
 				}
+				
 				
 			} catch (BiffException e) {
 				// TODO Auto-generated catch block
@@ -74,19 +63,42 @@ public class Main {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.println("Grafo Criado.");
 			
 			verificarInstrutores(G);
-			
 			adicionaRegras(G);
 			
-			System.out.println("Grafo G: "+G.getGraph());
+			Grafo F = new Grafo();
+			
+			for (int i = 0; i < t.length -1; i++){
+				for (int j = 0; j < t.length -1; j++){
+					if (G.getGraph().degreeOf(t[i]) > G.getGraph().degreeOf(t[j])){
+						Turma x = t[i];
+						t[i] = t[j];
+						t[j] = t[i];
+					}
+					F.addVertex(t[i]);
+				}
+			}
+			
+			
+			int chi = ChromaticNumber.findGreedyChromaticNumber(F.getGraph());
+			System.out.println("Número cromático: "+chi);
+			Map<Integer, Set<Turma>> coloring = ChromaticNumber
+					.findGreedyColoredGroups(F.getGraph());
+			
+			for (Integer colorId : coloring.keySet()) {
+				System.out.println("Vértices de cor " + colorId);
+				Set<Turma> vertices = coloring.get(colorId);
+				for (Object object : vertices) {
+					System.out.println(object.toString());
+				}
+			}
 		}
 	
 		/**
 		 * Verifica instrutores. Caso instrutor de uma matéria seja o mesmo de outra, adiciona-se uma
 		 * aresta entre as duas matérias.
-		 * @param G Array de grafos g1 a g10
+		 * @param G Grafo para criação de arestas entre instrutores
 		 */
 		public static void verificarInstrutores(Grafo G){
 			for (int i = 0; i < t.length-1; i++)
@@ -96,6 +108,10 @@ public class Main {
 							G.addEdge(t[i], t[j]);
 		}
 		
+		/**
+		 * Adiciona as 34 regras descritas no artigo para a criação de arestas no grafo de comflitos
+		 * @param G Grafo para manipulação
+		 */
 		public static void adicionaRegras(Grafo G){
 			for (int i = 0; i < t.length - 1; i++)
 				for (int j = 0; j < t.length - 1; j++)
@@ -164,4 +180,6 @@ public class Main {
 						
 					}
 		}
+		
+		
 	}
