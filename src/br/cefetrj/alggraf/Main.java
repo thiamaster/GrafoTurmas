@@ -69,16 +69,25 @@ public class Main {
 			
 			Grafo F = new Grafo();
 			
-			for (int i = 0; i < t.length -1; i++){
-				for (int j = 0; j < t.length -1; j++){
-					if (G.getGraph().degreeOf(t[i]) > G.getGraph().degreeOf(t[j])){
+			for (int i = 0; i < t.length -1; i++)
+				for (int j = 0; j < t.length -1; j++)
+					if (G.getGraph().degreeOf(t[i]) >= G.getGraph().degreeOf(t[j])){
 						Turma x = t[i];
 						t[i] = t[j];
-						t[j] = t[i];
+						t[j] = x;
 					}
-					F.addVertex(t[i]);
-				}
+			
+
+			G = null;
+			System.gc();
+			
+			for (int i = 0; i < t.length -1; i++){
+				F.addVertex(t[i]);
 			}
+			
+			
+			verificarInstrutores(F);
+			adicionaRegras(F);
 			
 			
 			int chi = ChromaticNumber.findGreedyChromaticNumber(F.getGraph());
